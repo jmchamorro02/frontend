@@ -24,18 +24,6 @@ const App = () => {
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
   const [reports, setReports] = useState([]);
-  const [activities, setActivities] = useState([]);
-  const [workerName, setWorkerName] = useState('');
-  const [datetime, setDatetime] = useState('');
-  const [role, setRole] = useState('');
-  const [area, setArea] = useState('');
-  const [jornada, setJornada] = useState('');
-  const [supervisor, setSupervisor] = useState('');
-  const [team, setTeam] = useState([
-    { ...initialTeamRow },
-    { ...initialTeamRow },
-    { ...initialTeamRow }
-  ]);
   const [activitiesTable, setActivitiesTable] = useState([
     { ...initialActivityRow }
   ]);
@@ -668,25 +656,28 @@ const App = () => {
   );
 };
 
-// Estilos para tabla
-const thStyle = {
-  border: '1px solid #bbb',
-  padding: '6px 4px',
-  background: '#f8f8f8',
-  fontWeight: 'bold',
-  fontSize: '15px'
-};
-const tdStyle = {
-  border: '1px solid #bbb',
-  padding: '4px'
-};
-const inputTdStyle = {
-  width: '100%',
-  border: 'none',
-  background: 'transparent',
-  fontSize: '15px',
-  outline: 'none'
-};
+// Elimina o comenta las variables no usadas para evitar errores en build CI
+// const [activities, setActivities] = useState([]);
+// const [workerName, setWorkerName] = useState("");
+// const [datetime, setDatetime] = useState("");
+// const thStyle = {
+//   border: '1px solid #bbb',
+//   padding: '6px 4px',
+//   background: '#f8f8f8',
+//   fontWeight: 'bold',
+//   fontSize: '15px'
+// };
+// const tdStyle = {
+//   border: '1px solid #bbb',
+//   padding: '4px'
+// };
+// const inputTdStyle = {
+//   width: '100%',
+//   border: 'none',
+//   background: 'transparent',
+//   fontSize: '15px',
+//   outline: 'none'
+// };
 
 export default App;
 
