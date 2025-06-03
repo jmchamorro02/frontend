@@ -19,6 +19,8 @@ const initialActivityRow = {
   horaFin: ''
 };
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
 const App = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -76,7 +78,7 @@ const App = () => {
     setNetworkError('');
     setLoginError('');
     try {
-      const response = await axios.post('http://localhost:4000/auth/login', { username, password });
+      const response = await axios.post(`${API_URL}/auth/login`, { username, password });
       setToken(response.data.token);
       setRole(response.data.role);
       localStorage.setItem('token', response.data.token);
@@ -154,7 +156,7 @@ const App = () => {
     setLoading(true);
     setNetworkError('');
     try {
-      await axios.post('http://localhost:4000/reports', {
+      await axios.post(`${API_URL}/reports`, {
         area,
         jornada,
         supervisor,
@@ -188,7 +190,7 @@ const App = () => {
     setLoading(true);
     setNetworkError('');
     try {
-      const response = await axios.get('http://localhost:4000/myreports', {
+      const response = await axios.get(`${API_URL}/myreports`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReports(response.data);
@@ -207,7 +209,7 @@ const App = () => {
     setLoading(true);
     setNetworkError('');
     try {
-      const response = await axios.get('http://localhost:4000/reports', {
+      const response = await axios.get(`${API_URL}/reports`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setReports(response.data);
@@ -230,7 +232,7 @@ const App = () => {
     try {
       // Asegúrate de que el ID es correcto y de tipo número
       const id = typeof reportId === 'number' ? reportId : Number(reportId);
-      await axios.delete(`http://localhost:4000/reports/${id}`, {
+      await axios.delete(`${API_URL}/reports/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Refrescar la lista después de borrar
@@ -262,7 +264,7 @@ const App = () => {
     setRegisterLoading(true);
     setNetworkError('');
     try {
-      await axios.post('http://localhost:4000/auth/register', {
+      await axios.post(`${API_URL}/auth/register`, {
         username: regUsername,
         password: regPassword,
         role: regRole
