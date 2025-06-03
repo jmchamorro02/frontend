@@ -37,6 +37,13 @@ const App = () => {
   const [registerLoading, setRegisterLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // Declaración de variables de estado faltantes para evitar errores de no definidas
+  const [role, setRole] = useState('');
+  const [team, setTeam] = useState([{ ...initialTeamRow }]);
+  const [area, setArea] = useState('');
+  const [jornada, setJornada] = useState('');
+  const [supervisor, setSupervisor] = useState('');
+
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
