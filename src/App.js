@@ -300,12 +300,16 @@ const App = () => {
           >
             {theme === 'light' ? '🌙 Modo Noche' : '☀️ Modo Día'}
           </button>
-          <Link to="/dashboard" className="btn-primary" style={{ marginLeft: 10 }}>
-            Ver Dashboard
-          </Link>
+          {token && role === 'admin' && (
+            <Link to="/dashboard" className="btn-primary" style={{ marginLeft: 10 }}>
+              Ver Dashboard
+            </Link>
+          )}
         </div>
         <Routes>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={
+            token && role === 'admin' ? <Dashboard /> : <div style={{padding:40, textAlign:'center'}}><h2>Acceso denegado</h2><p>Solo los administradores pueden ver el dashboard.</p></div>
+          } />
           <Route path="/" element={
             <div>
               <div className="branding">
