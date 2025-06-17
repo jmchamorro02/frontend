@@ -9,14 +9,20 @@ const initialTeamRow = {
   nombre: '',
   cargo: '',
   codigoEquipo: '',
-  tipoAsist: '',
-  tramo: ''
+  tipoAsist: '', // tipo de asistencia
+  tramo: '',
+  workerId: '',
+  tramoId: '',
+  activityId: '',
+  horaInicio: '',
+  horaFin: ''
 };
 
 const initialActivityRow = {
   descripcion: '',
   horaInicio: '',
-  horaFin: ''
+  horaFin: '',
+  detalle: '' // descripción libre de la actividad
 };
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -50,6 +56,18 @@ const App = () => {
   const [catalogActivities, setCatalogActivities] = useState([]);
   const [catalogTramos, setCatalogTramos] = useState([]);
   const [catalogWorkers, setCatalogWorkers] = useState([]);
+
+  const tipoAsistenciaOptions = [
+    'Presencial',
+    'Teletrabajo',
+    'Licencia médica',
+    'Vacaciones',
+    'Permiso',
+    'Inasistencia',
+    'Turno',
+    'Reposo',
+    'Otro'
+  ];
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -470,6 +488,7 @@ const App = () => {
                             <th>Hora Inicio</th>
                             <th>Hora Fin</th>
                             <th>Horas Trabajadas</th>
+                            <th>Tipo de Asistencia</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -533,6 +552,14 @@ const App = () => {
                                 </td>
                                 <td>{calcularHoras(row.horaInicio, row.horaFin)}</td>
                                 <td>
+                                  <select value={row.tipoAsist || ''} onChange={e => handleTeamChange(idx, 'tipoAsist', e.target.value)} className="input-table">
+                                    <option value="">Selecciona</option>
+                                    {tipoAsistenciaOptions.map(opt => (
+                                      <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td>
                                   <button type="button" onClick={() => handleRemoveTeamRow(idx)} className="btn-table" title="Eliminar fila">✖</button>
                                 </td>
                               </tr>
@@ -542,6 +569,56 @@ const App = () => {
                       </table>
                       <div className="table-btn-row">
                         <button type="button" onClick={handleAddTeamRow} className="btn-primary">Agregar Fila</button>
+                      </div>
+                    </div>
+                    <div className="table-responsive">
+                      <h3>Actividades</h3>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Descripción</th>
+                            <th>Hora de Inicio</th>
+                            <th>Hora de Fin</th>
+                            <th>Detalle</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activitiesTable.map((row, idx) => (
+                            <tr key={idx}>
+                              <td>
+                                <input type="text" value={row.descripcion || ''} onChange={e => {
+                                  const updated = [...activitiesTable];
+                                  updated[idx].descripcion = e.target.value;
+                                  setActivitiesTable(updated);
+                                }} className="input-table" />
+                              </td>
+                              <td>
+                                <input type="time" value={row.horaInicio || ''} onChange={e => {
+                                  const updated = [...activitiesTable];
+                                  updated[idx].horaInicio = e.target.value;
+                                  setActivitiesTable(updated);
+                                }} className="input-table" />
+                              </td>
+                              <td>
+                                <input type="time" value={row.horaFin || ''} onChange={e => {
+                                  const updated = [...activitiesTable];
+                                  updated[idx].horaFin = e.target.value;
+                                  setActivitiesTable(updated);
+                                }} className="input-table" />
+                              </td>
+                              <td>
+                                <input type="text" value={row.detalle || ''} placeholder="Detalle de la actividad (opcional)" onChange={e => {
+                                  const updated = [...activitiesTable];
+                                  updated[idx].detalle = e.target.value;
+                                  setActivitiesTable(updated);
+                                }} className="input-table" />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="table-btn-row">
+                        <button type="button" onClick={() => setActivitiesTable(prev => [...prev, { ...initialActivityRow }])} className="btn-primary">Agregar Actividad</button>
                       </div>
                     </div>
                     <button type="submit" className="btn-success">Enviar Informe</button>
@@ -592,6 +669,7 @@ const App = () => {
                                     <th>Descripción</th>
                                     <th>Hora de Inicio</th>
                                     <th>Hora de Fin</th>
+                                    <th>Detalle</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -600,6 +678,7 @@ const App = () => {
                                       <td>{row.descripcion}</td>
                                       <td>{row.horaInicio}</td>
                                       <td>{row.horaFin}</td>
+                                      <td>{row.detalle}</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -655,55 +734,5 @@ const App = () => {
                         const rut = e.target.rut.value.trim();
                         const cargo = e.target.cargo.value.trim();
                         if (!nombre || !rut || !cargo) return;
-                        if (catalogWorkers.some(w => w.rut === rut)) {
-                          alert('El RUT ya está registrado para otro trabajador.');
-                          return;
-                        }
-                        try {
-                          const res = await axios.post(`${API_URL}/catalog/workers`, { nombre, rut, cargo }, { headers: { Authorization: `Bearer ${token}` } });
-                          setCatalogWorkers(prev => [...prev, res.data]);
-                          e.target.reset();
-                        } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
-                      }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input name="nombre" type="text" placeholder="Nombre trabajador" className="input" />
-                        <input name="rut" type="text" placeholder="RUT trabajador" className="input" />
-                        <input name="cargo" type="text" placeholder="Cargo trabajador" className="input" />
-                        <button type="submit" className="btn-primary">Agregar Trabajador</button>
-                      </form>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          } />
-        </Routes>
-      </div>
-    </Router>
-  );
-};
-
-// Elimina o comenta las variables no usadas para evitar errores en build CI
-// const [activities, setActivities] = useState([]);
-// const [workerName, setWorkerName] = useState("");
-// const [datetime, setDatetime] = useState("");
-// const thStyle = {
-//   border: '1px solid #bbb',
-//   padding: '6px 4px',
-//   background: '#f8f8f8',
-//   fontWeight: 'bold',
-//   fontSize: '15px'
-// };
-// const tdStyle = {
-//   border: '1px solid #bbb',
-//   padding: '4px'
-// };
-// const inputTdStyle = {
-//   width: '100%',
-//   border: 'none',
-//   background: 'transparent',
-//   fontSize: '15px',
-//   outline: 'none'
-// };
-
-export default App;
+                        if
 
