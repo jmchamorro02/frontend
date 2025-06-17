@@ -46,6 +46,11 @@ const App = () => {
   const [jornada, setJornada] = useState('');
   const [supervisor, setSupervisor] = useState('');
 
+  // NUEVO: Hooks para cargar catálogos
+  const [catalogActivities, setCatalogActivities] = useState([]);
+  const [catalogTramos, setCatalogTramos] = useState([]);
+  const [catalogWorkers, setCatalogWorkers] = useState([]);
+
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
@@ -54,6 +59,31 @@ const App = () => {
       setRole(savedRole);
     }
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      if (role === 'admin') {
+        fetchAllReports(token);
+      } else {
+        fetchReports(token);
+      }
+    }
+  }, [token, role]);
+
+  useEffect(() => {
+    document.body.className = theme === 'dark' ? 'dark-theme' : '';
+  }, [theme]);
+
+  // NUEVO: Cargar catálogos al iniciar sesión
+  useEffect(() => {
+    if (!token) return;
+    axios.get(`${API_URL}/catalog/activities`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setCatalogActivities(res.data)).catch(() => {});
+    axios.get(`${API_URL}/catalog/tramos`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setCatalogTramos(res.data)).catch(() => {});
+    axios.get(`${API_URL}/catalog/workers`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setCatalogWorkers(res.data)).catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     if (token) {
@@ -289,6 +319,16 @@ const App = () => {
     }
   };
 
+  // NUEVO: Cálculo de horas trabajadas
+  function calcularHoras(inicio, fin) {
+    if (!inicio || !fin) return '';
+    const [h1, m1] = inicio.split(':').map(Number);
+    const [h2, m2] = fin.split(':').map(Number);
+    let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+    if (diff < 0) diff += 24 * 60;
+    return `${Math.floor(diff / 60)}:${(diff % 60).toString().padStart(2, '0')}`;
+  }
+
   return (
     <Router>
       <div className={`main-container${theme === 'dark' ? ' dark' : ''}`}>
@@ -416,172 +456,73 @@ const App = () => {
                     onSubmit={e => { e.preventDefault(); handleReportSubmit(); }}
                     className="form-section"
                   >
-                    <h2>Área de trabajo</h2>
-                    <div className="row">
-                      <div className="col">
-                        <input
-                          type="text"
-                          placeholder="Área"
-                          value={area}
-                          onChange={e => setArea(e.target.value)}
-                          className="input"
-                        />
-                      </div>
-                      <div className="col">
-                        <select
-                          value={jornada}
-                          onChange={e => setJornada(e.target.value)}
-                          className="input"
-                        >
-                          <option value="">Jornada</option>
-                          <option value="Día">Día</option>
-                          <option value="Noche">Noche</option>
-                        </select>
-                      </div>
-                    </div>
-                    <h2>Supervisor</h2>
-                    <div className="row">
-                      <input
-                        type="text"
-                        placeholder="Nombre Completo"
-                        value={supervisor}
-                        onChange={e => setSupervisor(e.target.value)}
-                        className="input"
-                      />
-                    </div>
-                    <h2>Equipo</h2>
+                    <h2>Equipo y Actividades</h2>
                     <div className="table-responsive">
                       <table>
                         <thead>
                           <tr>
+                            <th>Trabajador</th>
                             <th>RUT</th>
-                            <th>NOMBRE</th>
-                            <th>CARGO</th>
-                            <th>CÓDIGO EQUIPO</th>
-                            <th>TIPO DE ASIST</th>
-                            <th>TRAMO</th>
+                            <th>Cargo</th>
+                            <th>Tramo</th>
+                            <th>Actividad</th>
+                            <th>Hora Inicio</th>
+                            <th>Hora Fin</th>
+                            <th>Horas Trabajadas</th>
                             <th></th>
                           </tr>
                         </thead>
                         <tbody>
-                          {team.map((row, idx) => (
-                            <tr key={idx}>
-                              <td><input type="text" value={row.rut} onChange={e => handleTeamChange(idx, 'rut', e.target.value)} className="input-table" /></td>
-                              <td><input type="text" value={row.nombre} onChange={e => handleTeamChange(idx, 'nombre', e.target.value)} className="input-table" /></td>
-                              <td><input type="text" value={row.cargo} onChange={e => handleTeamChange(idx, 'cargo', e.target.value)} className="input-table" /></td>
-                              <td><input type="text" value={row.codigoEquipo} onChange={e => handleTeamChange(idx, 'codigoEquipo', e.target.value)} className="input-table" /></td>
-                              <td>
-                                <select value={row.tipoAsist} onChange={e => handleTeamChange(idx, 'tipoAsist', e.target.value)} className="input-table">
-                                  <option value="">Tipo de Asist</option>
-                                  <option value="EO">EO: En Obras</option>
-                                  <option value="D">D: Descanso</option>
-                                  <option value="A">A: Ausente</option>
-                                  <option value="P">P: Permiso</option>
-                                  <option value="PP">PP: Permiso Pagado</option>
-                                  <option value="E">E: Enfermo</option>
-                                  <option value="LI">LI: Licencia</option>
-                                  <option value="C">C: Curso</option>
-                                  <option value="F">F: Finiquitado</option>
-                                  <option value="R">R: Rechazado</option>
-                                  <option value="T">T: Trasladado</option>
-                                </select>
-                              </td>
-                              <td>
-                                <select value={row.tramo} onChange={e => handleTeamChange(idx, 'tramo', e.target.value)} className="input-table">
-                                  <option value="">Tramo</option>
-                                  <option value="A">A</option>
-                                  <option value="B">B</option>
-                                  <option value="C">C</option>
-                                  {[...Array(12)].map((_, i) => (
-                                    <option key={i+1} value={i+1}>{i+1}</option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveTeamRow(idx)}
-                                  className="btn-table"
-                                  title="Eliminar fila"
-                                >✖</button>
-                              </td>
-                            </tr>
-                          ))}
+                          {team.map((row, idx) => {
+                            const worker = catalogWorkers.find(w => w.id === row.workerId) || {};
+                            return (
+                              <tr key={idx}>
+                                <td>
+                                  <select value={row.workerId || ''} onChange={e => handleTeamChange(idx, 'workerId', e.target.value)} className="input-table">
+                                    <option value="">Selecciona</option>
+                                    {catalogWorkers.map(w => (
+                                      <option key={w.id} value={w.id}>{w.nombre}</option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td>{worker.rut || ''}</td>
+                                <td>{worker.cargo || ''}</td>
+                                <td>
+                                  <select value={row.tramoId || ''} onChange={e => handleTeamChange(idx, 'tramoId', e.target.value)} className="input-table">
+                                    <option value="">Selecciona</option>
+                                    {catalogTramos.map(t => (
+                                      <option key={t.id} value={t.id}>{t.nombre}</option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td>
+                                  <select value={row.activityId || ''} onChange={e => handleTeamChange(idx, 'activityId', e.target.value)} className="input-table">
+                                    <option value="">Selecciona</option>
+                                    {catalogActivities.map(a => (
+                                      <option key={a.id} value={a.id}>{a.nombre}</option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td>
+                                  <input type="time" value={row.horaInicio || ''} onChange={e => handleTeamChange(idx, 'horaInicio', e.target.value)} className="input-table" />
+                                </td>
+                                <td>
+                                  <input type="time" value={row.horaFin || ''} onChange={e => handleTeamChange(idx, 'horaFin', e.target.value)} className="input-table" />
+                                </td>
+                                <td>{calcularHoras(row.horaInicio, row.horaFin)}</td>
+                                <td>
+                                  <button type="button" onClick={() => handleRemoveTeamRow(idx)} className="btn-table" title="Eliminar fila">✖</button>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                       <div className="table-btn-row">
-                        <button
-                          type="button"
-                          onClick={handleAddTeamRow}
-                          className="btn-primary"
-                        >Agregar Fila</button>
+                        <button type="button" onClick={handleAddTeamRow} className="btn-primary">Agregar Fila</button>
                       </div>
                     </div>
-                    <h2>Actividades Realizadas</h2>
-                    <div className="table-responsive">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Descripción</th>
-                            <th>Hora de Inicio</th>
-                            <th>Hora de Fin</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {activitiesTable.map((row, idx) => (
-                            <tr key={idx}>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={row.descripcion}
-                                  onChange={e => handleActivityTableChange(idx, 'descripcion', e.target.value)}
-                                  className="input-table"
-                                  placeholder="Descripción de la actividad"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="time"
-                                  value={row.horaInicio}
-                                  onChange={e => handleActivityTableChange(idx, 'horaInicio', e.target.value)}
-                                  className="input-table"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="time"
-                                  value={row.horaFin}
-                                  onChange={e => handleActivityTableChange(idx, 'horaFin', e.target.value)}
-                                  className="input-table"
-                                />
-                              </td>
-                              <td>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveActivityRow(idx)}
-                                  className="btn-table"
-                                  title="Eliminar fila"
-                                >✖</button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <div className="table-btn-row">
-                        <button
-                          type="button"
-                          onClick={handleAddActivityRow}
-                          className="btn-primary"
-                        >Agregar Actividad</button>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      className="btn-success"
-                    >
-                      Enviar Informe
-                    </button>
+                    <button type="submit" className="btn-success">Enviar Informe</button>
                   </form>
                   <h2>{role === 'admin' ? 'Todos los Informes' : 'Mis Informes'}</h2>
                   {reports.length === 0 ? (
@@ -658,6 +599,14 @@ const App = () => {
                         </li>
                       ))}
                     </ul>
+                  )}
+                  {/* Panel de administración (solo admin) */}
+                  {role === 'admin' && (
+                    <div className="admin-panel">
+                      <h2>Panel de Administración</h2>
+                      <p>Aquí podrás editar actividades, tramos y trabajadores (implementación futura).</p>
+                      {/* Aquí irán los formularios para CRUD de catálogos */}
+                    </div>
                   )}
                 </>
               )}
