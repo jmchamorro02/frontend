@@ -734,5 +734,28 @@ const App = () => {
                         const rut = e.target.rut.value.trim();
                         const cargo = e.target.cargo.value.trim();
                         if (!nombre || !rut || !cargo) return;
-                        if
+                        try {
+                          const res = await axios.post(`${API_URL}/catalog/workers`, { nombre, rut, cargo }, { headers: { Authorization: `Bearer ${token}` } });
+                          setCatalogWorkers(prev => [...prev, res.data]);
+                          e.target.reset();
+                        } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
+                      }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input name="nombre" type="text" placeholder="Nombre Trabajador" className="input" />
+                        <input name="rut" type="text" placeholder="RUT" className="input" />
+                        <input name="cargo" type="text" placeholder="Cargo" className="input" />
+                        <button type="submit" className="btn-primary">Agregar Trabajador</button>
+                      </form>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          } />
+        </Routes>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
 
