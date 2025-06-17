@@ -18,11 +18,9 @@ const initialTeamRow = {
   horaFin: ''
 };
 
+// Cambiar initialActivityRow para solo tener descripción
 const initialActivityRow = {
-  descripcion: '',
-  horaInicio: '',
-  horaFin: '',
-  detalle: '' // descripción libre de la actividad
+  descripcion: ''
 };
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:4000';
@@ -182,14 +180,10 @@ const App = () => {
     const filteredTeam = team.filter(row => Object.values(row).some(val => val));
     // Generar actividades a partir de los datos de la tabla de equipo si no hay activitiesTable
     let filteredActivities = [];
-    if (Array.isArray(activitiesTable) && activitiesTable.length > 0 && activitiesTable.some(row => row.descripcion && row.horaInicio && row.horaFin)) {
-      filteredActivities = activitiesTable.filter(row => row.descripcion || row.horaInicio || row.horaFin);
+    if (Array.isArray(activitiesTable) && activitiesTable.length > 0 && activitiesTable.some(row => row.descripcion)) {
+      filteredActivities = activitiesTable.filter(row => row.descripcion);
     } else {
-      filteredActivities = team.filter(row => row.activityId || row.horaInicio || row.horaFin).map(row => ({
-        descripcion: (catalogActivities.find(a => a.id === row.activityId)?.nombre) || '',
-        horaInicio: row.horaInicio || '',
-        horaFin: row.horaFin || ''
-      }));
+      filteredActivities = [];
     }
     setLoading(true);
     setNetworkError('');
@@ -482,6 +476,7 @@ const App = () => {
                           <tr>
                             <th>Trabajador</th>
                             <th>RUT</th>
+                            <th>NOMBRE</th>
                             <th>Cargo</th>
                             <th>Tramo</th>
                             <th>Actividad</th>
@@ -500,7 +495,7 @@ const App = () => {
                                 <td>
                                   <select value={row.workerId || ''} onChange={e => {
                                     const workerId = e.target.value;
-                                    const worker = catalogWorkers.find(w => w.id === workerId);
+                                    const worker = catalogWorkers.find(w => w.id === workerId || w._id === workerId);
                                     handleTeamChange(idx, 'workerId', workerId);
                                     handleTeamChange(idx, 'rut', worker ? worker.rut : '');
                                     handleTeamChange(idx, 'nombre', worker ? worker.nombre : '');
@@ -508,13 +503,16 @@ const App = () => {
                                   }} className="input-table">
                                     <option value="">Selecciona</option>
                                     {catalogWorkers.map(w => (
-                                      <option key={w.id} value={w.id}>{w.nombre}</option>
+                                      <option key={w.id || w._id} value={w.id || w._id}>{w.nombre}</option>
                                     ))}
                                   </select>
                                 </td>
                                 <td>
                                   {/* Mostrar el RUT solo como texto, no editable ni seleccionable */}
                                   <span>{row.rut || ''}</span>
+                                </td>
+                                <td>
+                                  <span>{row.nombre || ''}</span>
                                 </td>
                                 <td>
                                   <select value={row.cargo || ''} onChange={e => handleTeamChange(idx, 'cargo', e.target.value)} className="input-table">
@@ -532,7 +530,7 @@ const App = () => {
                                   <select value={row.tramoId || ''} onChange={e => handleTeamChange(idx, 'tramoId', e.target.value)} className="input-table">
                                     <option value="">Selecciona</option>
                                     {catalogTramos.map(t => (
-                                      <option key={t.id} value={t.id}>{t.nombre}</option>
+                                      <option key={t.id || t._id} value={t.id || t._id}>{t.nombre}</option>
                                     ))}
                                   </select>
                                 </td>
@@ -577,9 +575,6 @@ const App = () => {
                         <thead>
                           <tr>
                             <th>Descripción</th>
-                            <th>Hora de Inicio</th>
-                            <th>Hora de Fin</th>
-                            <th>Detalle</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -592,33 +587,12 @@ const App = () => {
                                   setActivitiesTable(updated);
                                 }} className="input-table" />
                               </td>
-                              <td>
-                                <input type="time" value={row.horaInicio || ''} onChange={e => {
-                                  const updated = [...activitiesTable];
-                                  updated[idx].horaInicio = e.target.value;
-                                  setActivitiesTable(updated);
-                                }} className="input-table" />
-                              </td>
-                              <td>
-                                <input type="time" value={row.horaFin || ''} onChange={e => {
-                                  const updated = [...activitiesTable];
-                                  updated[idx].horaFin = e.target.value;
-                                  setActivitiesTable(updated);
-                                }} className="input-table" />
-                              </td>
-                              <td>
-                                <input type="text" value={row.detalle || ''} placeholder="Detalle de la actividad (opcional)" onChange={e => {
-                                  const updated = [...activitiesTable];
-                                  updated[idx].detalle = e.target.value;
-                                  setActivitiesTable(updated);
-                                }} className="input-table" />
-                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                       <div className="table-btn-row">
-                        <button type="button" onClick={() => setActivitiesTable(prev => [...prev, { ...initialActivityRow }])} className="btn-primary">Agregar Actividad</button>
+                        <button type="button" onClick={() => setActivitiesTable(prev => [...prev, { descripcion: '' }])} className="btn-primary">Agregar Actividad</button>
                       </div>
                     </div>
                     <button type="submit" className="btn-success">Enviar Informe</button>
@@ -655,7 +629,10 @@ const App = () => {
                                       <td>{row.cargo}</td>
                                       <td>{row.codigoEquipo}</td>
                                       <td>{row.tipoAsist}</td>
-                                      <td>{row.tramo}</td>
+                                      <td>{
+                                        row.tramo ||
+                                        (catalogTramos.find(t => t.id === row.tramoId || t._id === row.tramoId)?.nombre || '')
+                                      }</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -667,18 +644,12 @@ const App = () => {
                                 <thead>
                                   <tr>
                                     <th>Descripción</th>
-                                    <th>Hora de Inicio</th>
-                                    <th>Hora de Fin</th>
-                                    <th>Detalle</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {(report.actividades || []).map((row, idx) => (
                                     <tr key={idx}>
                                       <td>{row.descripcion}</td>
-                                      <td>{row.horaInicio}</td>
-                                      <td>{row.horaFin}</td>
-                                      <td>{row.detalle}</td>
                                     </tr>
                                   ))}
                                 </tbody>
