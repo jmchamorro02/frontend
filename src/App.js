@@ -464,7 +464,11 @@ const App = () => {
                         <input type="text" className="input" placeholder="Área" value={area} onChange={e => setArea(e.target.value)} />
                       </div>
                       <div className="col">
-                        <input type="text" className="input" placeholder="Jornada" value={jornada} onChange={e => setJornada(e.target.value)} />
+                        <select className="input" value={jornada} onChange={e => setJornada(e.target.value)}>
+                          <option value="">Selecciona Jornada</option>
+                          <option value="Día">Día</option>
+                          <option value="Noche">Noche</option>
+                        </select>
                       </div>
                       <div className="col">
                         <input type="text" className="input" placeholder="Supervisor" value={supervisor} onChange={e => setSupervisor(e.target.value)} />
@@ -603,7 +607,7 @@ const App = () => {
                   ) : (
                     <ul>
                       {reports.map((report) => (
-                        <li key={report.id}>
+                        <li key={report._id || report.id}>
                           <div style={{ marginBottom: '8px', paddingLeft: '8px', borderLeft: '3px solid #3498db' }}>
                             <div><strong>Área:</strong> {report.area}</div>
                             <div><strong>Jornada:</strong> {report.jornada}</div>
@@ -659,7 +663,7 @@ const App = () => {
                           <small style={{ color: '#7f8c8d' }}>Enviado el: {new Date(report.dateSubmitted).toLocaleString()}</small>
                           <button
                             type="button"
-                            onClick={() => handleDeleteReport(report.id)}
+                            onClick={() => handleDeleteReport(report._id || report.id)}
                             className="btn-danger btn-delete-report"
                             title="Eliminar informe"
                           >
@@ -699,23 +703,25 @@ const App = () => {
                         <button type="submit" className="btn-primary">Agregar Tramo</button>
                       </form>
                       {/* Agregar Trabajador */}
-                      <form onSubmit={async e => {
-                        e.preventDefault();
-                        const nombre = e.target.nombre.value.trim();
-                        const rut = e.target.rut.value.trim();
-                        const cargo = e.target.cargo.value.trim();
-                        if (!nombre || !rut || !cargo) return;
-                        try {
-                          const res = await axios.post(`${API_URL}/catalog/workers`, { nombre, rut, cargo }, { headers: { Authorization: `Bearer ${token}` } });
-                          setCatalogWorkers(prev => [...prev, res.data]);
-                          e.target.reset();
-                        } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
-                      }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input name="nombre" type="text" placeholder="Nombre Trabajador" className="input" />
-                        <input name="rut" type="text" placeholder="RUT" className="input" />
-                        <input name="cargo" type="text" placeholder="Cargo" className="input" />
-                        <button type="submit" className="btn-primary">Agregar Trabajador</button>
-                      </form>
+                      {role === 'admin' && (
+                        <form onSubmit={async e => {
+                          e.preventDefault();
+                          const nombre = e.target.nombre.value.trim();
+                          const rut = e.target.rut.value.trim();
+                          const cargo = e.target.cargo.value.trim();
+                          if (!nombre || !rut || !cargo) return;
+                          try {
+                            const res = await axios.post(`${API_URL}/catalog/workers`, { nombre, rut, cargo }, { headers: { Authorization: `Bearer ${token}` } });
+                            setCatalogWorkers(prev => [...prev, res.data]);
+                            e.target.reset();
+                          } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
+                        }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input name="nombre" type="text" placeholder="Nombre Trabajador" className="input" />
+                          <input name="rut" type="text" placeholder="RUT" className="input" />
+                          <input name="cargo" type="text" placeholder="Cargo" className="input" />
+                          <button type="submit" className="btn-primary">Agregar Trabajador</button>
+                        </form>
+                      )}
                     </div>
                   )}
                 </>
