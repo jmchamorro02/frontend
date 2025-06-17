@@ -460,7 +460,6 @@ const App = () => {
                         </thead>
                         <tbody>
                           {team.map((row, idx) => {
-                            const worker = catalogWorkers.find(w => w.id === row.workerId) || {};
                             return (
                               <tr key={idx}>
                                 <td>
