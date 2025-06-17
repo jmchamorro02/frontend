@@ -454,8 +454,6 @@ const App = () => {
                         </thead>
                         <tbody>
                           {team.map((row, idx) => {
-                            // Selección automática de RUT y nombre al elegir trabajador
-                            const selectedWorker = catalogWorkers.find(w => w.id === row.workerId);
                             // Opciones únicas de cargo para menú estandarizado
                             const uniqueCargos = Array.from(new Set(catalogWorkers.map(w => w.cargo)));
                             return (
