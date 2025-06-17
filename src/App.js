@@ -478,7 +478,12 @@ const App = () => {
                         </select>
                       </div>
                       <div className="col">
-                        <input type="text" className="input" placeholder="Supervisor" value={supervisor} onChange={e => setSupervisor(e.target.value)} />
+                        <select className="input" value={supervisor} onChange={e => setSupervisor(e.target.value)}>
+                          <option value="">Selecciona Supervisor</option>
+                          {catalogWorkers.filter(w => (w.cargo || '').toLowerCase().includes('supervisor')).map(w => (
+                            <option key={w._id || w.id} value={w.nombre}>{w.nombre}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                     <div className="table-responsive">
