@@ -150,14 +150,8 @@ const App = () => {
     setTeam(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev);
   };
 
- 
-
   const handleReportSubmit = async () => {
     // Validación básica
-    if (!area.trim() || !jornada.trim() || !supervisor.trim()) {
-      alert('Por favor, completa los datos de área, jornada y supervisor.');
-      return;
-    }
     if (team.length === 0 || team.every(row => Object.values(row).every(val => !val))) {
       alert('Debes ingresar al menos un integrante del equipo.');
       return;
@@ -460,10 +454,21 @@ const App = () => {
                         </thead>
                         <tbody>
                           {team.map((row, idx) => {
+                            // Selección automática de RUT y nombre al elegir trabajador
+                            const selectedWorker = catalogWorkers.find(w => w.id === row.workerId);
+                            // Opciones únicas de cargo para menú estandarizado
+                            const uniqueCargos = Array.from(new Set(catalogWorkers.map(w => w.cargo)));
                             return (
                               <tr key={idx}>
                                 <td>
-                                  <select value={row.workerId || ''} onChange={e => handleTeamChange(idx, 'workerId', e.target.value)} className="input-table">
+                                  <select value={row.workerId || ''} onChange={e => {
+                                    const workerId = e.target.value;
+                                    const worker = catalogWorkers.find(w => w.id === workerId);
+                                    handleTeamChange(idx, 'workerId', workerId);
+                                    handleTeamChange(idx, 'rut', worker ? worker.rut : '');
+                                    handleTeamChange(idx, 'nombre', worker ? worker.nombre : '');
+                                    handleTeamChange(idx, 'cargo', worker ? worker.cargo : '');
+                                  }} className="input-table">
                                     <option value="">Selecciona</option>
                                     {catalogWorkers.map(w => (
                                       <option key={w.id} value={w.id}>{w.nombre}</option>
@@ -471,20 +476,20 @@ const App = () => {
                                   </select>
                                 </td>
                                 <td>
-                                  <select value={row.workerId || ''} onChange={e => handleTeamChange(idx, 'workerId', e.target.value)} className="input-table">
-                                    <option value="">Selecciona</option>
-                                    {catalogWorkers.map(w => (
-                                      <option key={w.id} value={w.id}>{w.rut}</option>
-                                    ))}
-                                  </select>
+                                  <input type="text" value={row.rut || ''} readOnly className="input-table" />
                                 </td>
                                 <td>
-                                  <select value={row.workerId || ''} onChange={e => handleTeamChange(idx, 'workerId', e.target.value)} className="input-table">
+                                  <select value={row.cargo || ''} onChange={e => handleTeamChange(idx, 'cargo', e.target.value)} className="input-table">
                                     <option value="">Selecciona</option>
-                                    {catalogWorkers.map(w => (
-                                      <option key={w.id} value={w.id}>{w.cargo}</option>
+                                    {uniqueCargos.map(cargo => (
+                                      <option key={cargo} value={cargo}>{cargo}</option>
                                     ))}
+                                    {/* Permitir edición libre */}
+                                    <option value="__custom">Otro...</option>
                                   </select>
+                                  {row.cargo === '__custom' && (
+                                    <input type="text" className="input-table" placeholder="Escribe el cargo" onBlur={e => handleTeamChange(idx, 'cargo', e.target.value)} autoFocus />
+                                  )}
                                 </td>
                                 <td>
                                   <select value={row.tramoId || ''} onChange={e => handleTeamChange(idx, 'tramoId', e.target.value)} className="input-table">
@@ -601,47 +606,49 @@ const App = () => {
                   )}
                   {/* Panel de administración (solo admin) */}
                   {role === 'admin' && (
-                    <div className="admin-panel">
-                      <h2>Panel de Administración</h2>
+                    <div className="admin-panel" style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
                       {/* Agregar Actividad */}
                       <form onSubmit={async e => {
                         e.preventDefault();
-                        const nombre = prompt('Nombre de la nueva actividad:');
-                        if (!nombre) return;
+                        if (!e.target.nombre.value.trim()) return;
                         try {
-                          const res = await axios.post(`${API_URL}/catalog/activities`, { nombre }, { headers: { Authorization: `Bearer ${token}` } });
+                          const res = await axios.post(`${API_URL}/catalog/activities`, { nombre: e.target.nombre.value }, { headers: { Authorization: `Bearer ${token}` } });
                           setCatalogActivities(prev => [...prev, res.data]);
-                          alert('Actividad agregada');
+                          e.target.reset();
                         } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
-                      }} style={{marginBottom:10}}>
+                      }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input name="nombre" type="text" placeholder="Nueva actividad" className="input" />
                         <button type="submit" className="btn-primary">Agregar Actividad</button>
                       </form>
                       {/* Agregar Tramo */}
                       <form onSubmit={async e => {
                         e.preventDefault();
-                        const nombre = prompt('Nombre del nuevo tramo:');
-                        if (!nombre) return;
+                        if (!e.target.nombre.value.trim()) return;
                         try {
-                          const res = await axios.post(`${API_URL}/catalog/tramos`, { nombre }, { headers: { Authorization: `Bearer ${token}` } });
+                          const res = await axios.post(`${API_URL}/catalog/tramos`, { nombre: e.target.nombre.value }, { headers: { Authorization: `Bearer ${token}` } });
                           setCatalogTramos(prev => [...prev, res.data]);
-                          alert('Tramo agregado');
+                          e.target.reset();
                         } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
-                      }} style={{marginBottom:10}}>
+                      }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input name="nombre" type="text" placeholder="Nuevo tramo" className="input" />
                         <button type="submit" className="btn-primary">Agregar Tramo</button>
                       </form>
                       {/* Agregar Trabajador */}
                       <form onSubmit={async e => {
                         e.preventDefault();
-                        const nombre = prompt('Nombre del trabajador:');
-                        const rut = prompt('RUT del trabajador:');
-                        const cargo = prompt('Cargo del trabajador:');
-                        if (!nombre || !rut || !cargo) return alert('Todos los campos son requeridos');
+                        const nombre = e.target.nombre.value.trim();
+                        const rut = e.target.rut.value.trim();
+                        const cargo = e.target.cargo.value.trim();
+                        if (!nombre || !rut || !cargo) return;
                         try {
                           const res = await axios.post(`${API_URL}/catalog/workers`, { nombre, rut, cargo }, { headers: { Authorization: `Bearer ${token}` } });
                           setCatalogWorkers(prev => [...prev, res.data]);
-                          alert('Trabajador agregado');
+                          e.target.reset();
                         } catch (err) { alert('Error: ' + (err.response?.data?.message || err.message)); }
-                      }}>
+                      }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <input name="nombre" type="text" placeholder="Nombre trabajador" className="input" />
+                        <input name="rut" type="text" placeholder="RUT trabajador" className="input" />
+                        <input name="cargo" type="text" placeholder="Cargo trabajador" className="input" />
                         <button type="submit" className="btn-primary">Agregar Trabajador</button>
                       </form>
                     </div>
