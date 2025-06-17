@@ -158,38 +158,28 @@ const App = () => {
     }
     // Filtrar filas vacías
     const filteredTeam = team.filter(row => Object.values(row).some(val => val));
-    // NUEVO: Generar actividades a partir de los datos de la tabla de equipo si no hay activitiesTable
-    // Si activitiesTable no se usa, generamos actividades desde team
+    // Generar actividades a partir de los datos de la tabla de equipo si no hay activitiesTable
     let filteredActivities = [];
     if (Array.isArray(activitiesTable) && activitiesTable.length > 0 && activitiesTable.some(row => row.descripcion && row.horaInicio && row.horaFin)) {
-      filteredActivities = activitiesTable.filter(row => row.descripcion.trim() && row.horaInicio && row.horaFin);
+      filteredActivities = activitiesTable.filter(row => row.descripcion || row.horaInicio || row.horaFin);
     } else {
       // Si no hay activitiesTable, intentamos generar actividades desde team
-      filteredActivities = team.filter(row => row.activityId && row.horaInicio && row.horaFin).map(row => ({
+      filteredActivities = team.filter(row => row.activityId || row.horaInicio || row.horaFin).map(row => ({
         descripcion: (catalogActivities.find(a => a.id === row.activityId)?.nombre) || '',
-        horaInicio: row.horaInicio,
-        horaFin: row.horaFin
+        horaInicio: row.horaInicio || '',
+        horaFin: row.horaFin || ''
       }));
     }
-    if (filteredActivities.length === 0) {
-      alert('Debes ingresar al menos una actividad realizada por el equipo.');
-      return;
-    }
+    // Ya no se requiere ninguna validación de campos de actividades
     setLoading(true);
     setNetworkError('');
     try {
       await axios.post(`${API_URL}/reports`, {
-        area,
-        jornada,
-        supervisor,
         team: filteredTeam,
         actividades: filteredActivities
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setArea('');
-      setJornada('');
-      setSupervisor('');
       setTeam([{ ...initialTeamRow }]);
       setActivitiesTable([{ ...initialActivityRow }]);
       if (role === 'admin') {
