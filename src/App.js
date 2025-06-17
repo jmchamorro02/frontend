@@ -150,21 +150,7 @@ const App = () => {
     setTeam(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev);
   };
 
-  const handleActivityTableChange = (idx, field, value) => {
-    setActivitiesTable(prev => {
-      const updated = [...prev];
-      updated[idx][field] = value;
-      return updated;
-    });
-  };
-
-  const handleAddActivityRow = () => {
-    setActivitiesTable(prev => [...prev, { ...initialActivityRow }]);
-  };
-
-  const handleRemoveActivityRow = (idx) => {
-    setActivitiesTable(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev);
-  };
+ 
 
   const handleReportSubmit = async () => {
     // Validación básica
