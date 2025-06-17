@@ -42,9 +42,6 @@ const App = () => {
   // Declaración de variables de estado faltantes para evitar errores de no definidas
   const [role, setRole] = useState('');
   const [team, setTeam] = useState([{ ...initialTeamRow }]);
-  const [area, setArea] = useState('');
-  const [jornada, setJornada] = useState('');
-  const [supervisor, setSupervisor] = useState('');
 
   // NUEVO: Hooks para cargar catálogos
   const [catalogActivities, setCatalogActivities] = useState([]);
