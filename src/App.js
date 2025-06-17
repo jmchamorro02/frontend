@@ -55,6 +55,13 @@ const App = () => {
   const [catalogTramos, setCatalogTramos] = useState([]);
   const [catalogWorkers, setCatalogWorkers] = useState([]);
 
+  // 1. Obtener lista única de cargos existentes
+  const uniqueCargos = Array.from(new Set(catalogWorkers.map(w => w.cargo))).filter(Boolean);
+  const [catalogCargos, setCatalogCargos] = useState(uniqueCargos);
+  useEffect(() => {
+    setCatalogCargos(Array.from(new Set(catalogWorkers.map(w => w.cargo))).filter(Boolean));
+  }, [catalogWorkers]);
+
   const tipoAsistenciaOptions = [
     'Presencial',
     'Teletrabajo',
@@ -718,7 +725,12 @@ const App = () => {
                         }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <input name="nombre" type="text" placeholder="Nombre Trabajador" className="input" />
                           <input name="rut" type="text" placeholder="RUT" className="input" />
-                          <input name="cargo" type="text" placeholder="Cargo" className="input" />
+                          <select name="cargo" className="input">
+                            <option value="">Selecciona Cargo</option>
+                            {catalogCargos.map(cargo => (
+                              <option key={cargo} value={cargo}>{cargo}</option>
+                            ))}
+                          </select>
                           <button type="submit" className="btn-primary">Agregar Trabajador</button>
                         </form>
                       )}
