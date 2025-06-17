@@ -158,7 +158,19 @@ const App = () => {
     }
     // Filtrar filas vacías
     const filteredTeam = team.filter(row => Object.values(row).some(val => val));
-    const filteredActivities = activitiesTable.filter(row => row.descripcion.trim() && row.horaInicio && row.horaFin);
+    // NUEVO: Generar actividades a partir de los datos de la tabla de equipo si no hay activitiesTable
+    // Si activitiesTable no se usa, generamos actividades desde team
+    let filteredActivities = [];
+    if (Array.isArray(activitiesTable) && activitiesTable.length > 0 && activitiesTable.some(row => row.descripcion && row.horaInicio && row.horaFin)) {
+      filteredActivities = activitiesTable.filter(row => row.descripcion.trim() && row.horaInicio && row.horaFin);
+    } else {
+      // Si no hay activitiesTable, intentamos generar actividades desde team
+      filteredActivities = team.filter(row => row.activityId && row.horaInicio && row.horaFin).map(row => ({
+        descripcion: (catalogActivities.find(a => a.id === row.activityId)?.nombre) || '',
+        horaInicio: row.horaInicio,
+        horaFin: row.horaFin
+      }));
+    }
     if (filteredActivities.length === 0) {
       alert('Debes ingresar al menos una actividad realizada por el equipo.');
       return;
@@ -454,7 +466,6 @@ const App = () => {
                         </thead>
                         <tbody>
                           {team.map((row, idx) => {
-                            // Opciones únicas de cargo para menú estandarizado
                             const uniqueCargos = Array.from(new Set(catalogWorkers.map(w => w.cargo)));
                             return (
                               <tr key={idx}>
@@ -474,7 +485,8 @@ const App = () => {
                                   </select>
                                 </td>
                                 <td>
-                                  <input type="text" value={row.rut || ''} readOnly className="input-table" />
+                                  {/* Mostrar el RUT solo como texto, no editable ni seleccionable */}
+                                  <span>{row.rut || ''}</span>
                                 </td>
                                 <td>
                                   <select value={row.cargo || ''} onChange={e => handleTeamChange(idx, 'cargo', e.target.value)} className="input-table">
@@ -482,7 +494,6 @@ const App = () => {
                                     {uniqueCargos.map(cargo => (
                                       <option key={cargo} value={cargo}>{cargo}</option>
                                     ))}
-                                    {/* Permitir edición libre */}
                                     <option value="__custom">Otro...</option>
                                   </select>
                                   {row.cargo === '__custom' && (
@@ -638,6 +649,10 @@ const App = () => {
                         const rut = e.target.rut.value.trim();
                         const cargo = e.target.cargo.value.trim();
                         if (!nombre || !rut || !cargo) return;
+                        if (catalogWorkers.some(w => w.rut === rut)) {
+                          alert('El RUT ya está registrado para otro trabajador.');
+                          return;
+                        }
                         try {
                           const res = await axios.post(`${API_URL}/catalog/workers`, { nombre, rut, cargo }, { headers: { Authorization: `Bearer ${token}` } });
                           setCatalogWorkers(prev => [...prev, res.data]);
