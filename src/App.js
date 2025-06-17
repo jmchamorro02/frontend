@@ -42,6 +42,9 @@ const App = () => {
   // Declaración de variables de estado faltantes para evitar errores de no definidas
   const [role, setRole] = useState('');
   const [team, setTeam] = useState([{ ...initialTeamRow }]);
+  const [area, setArea] = useState('');
+  const [jornada, setJornada] = useState('');
+  const [supervisor, setSupervisor] = useState('');
 
   // NUEVO: Hooks para cargar catálogos
   const [catalogActivities, setCatalogActivities] = useState([]);
@@ -149,6 +152,10 @@ const App = () => {
 
   const handleReportSubmit = async () => {
     // Validación básica
+    if (!area.trim() || !jornada.trim() || !supervisor.trim()) {
+      alert('Debes completar área, jornada y supervisor.');
+      return;
+    }
     if (team.length === 0 || team.every(row => Object.values(row).every(val => !val))) {
       alert('Debes ingresar al menos un integrante del equipo.');
       return;
@@ -160,23 +167,27 @@ const App = () => {
     if (Array.isArray(activitiesTable) && activitiesTable.length > 0 && activitiesTable.some(row => row.descripcion && row.horaInicio && row.horaFin)) {
       filteredActivities = activitiesTable.filter(row => row.descripcion || row.horaInicio || row.horaFin);
     } else {
-      // Si no hay activitiesTable, intentamos generar actividades desde team
       filteredActivities = team.filter(row => row.activityId || row.horaInicio || row.horaFin).map(row => ({
         descripcion: (catalogActivities.find(a => a.id === row.activityId)?.nombre) || '',
         horaInicio: row.horaInicio || '',
         horaFin: row.horaFin || ''
       }));
     }
-    // Ya no se requiere ninguna validación de campos de actividades
     setLoading(true);
     setNetworkError('');
     try {
       await axios.post(`${API_URL}/reports`, {
+        area,
+        jornada,
+        supervisor,
         team: filteredTeam,
         actividades: filteredActivities
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setArea('');
+      setJornada('');
+      setSupervisor('');
       setTeam([{ ...initialTeamRow }]);
       setActivitiesTable([{ ...initialActivityRow }]);
       if (role === 'admin') {
@@ -436,6 +447,17 @@ const App = () => {
                     className="form-section"
                   >
                     <h2>Equipo y Actividades</h2>
+                    <div className="row">
+                      <div className="col">
+                        <input type="text" className="input" placeholder="Área" value={area} onChange={e => setArea(e.target.value)} />
+                      </div>
+                      <div className="col">
+                        <input type="text" className="input" placeholder="Jornada" value={jornada} onChange={e => setJornada(e.target.value)} />
+                      </div>
+                      <div className="col">
+                        <input type="text" className="input" placeholder="Supervisor" value={supervisor} onChange={e => setSupervisor(e.target.value)} />
+                      </div>
+                    </div>
                     <div className="table-responsive">
                       <table>
                         <thead>
@@ -531,9 +553,6 @@ const App = () => {
                     <ul>
                       {reports.map((report) => (
                         <li key={report.id}>
-                          <p style={{ margin: 0 }}>
-                            <strong>{role === 'admin' ? `${report.username}: ` : ''}</strong>
-                          </p>
                           <div style={{ marginBottom: '8px', paddingLeft: '8px', borderLeft: '3px solid #3498db' }}>
                             <div><strong>Área:</strong> {report.area}</div>
                             <div><strong>Jornada:</strong> {report.jornada}</div>
