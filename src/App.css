@@ -143,9 +143,9 @@ body.dark-theme {
 }
 
 .main-container {
-  max-width: 1050px;
+  max-width: 1200px; /* Increased from 1050px */
   margin: 30px auto;
-  padding: 30px 30px 40px 30px;
+  padding: 40px 40px 50px 40px; /* Increased padding */
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 4px 24px 0 rgba(44, 62, 80, 0.10);
@@ -197,15 +197,16 @@ h2 {
 }
 
 .input, .input-table, select.input-table {
-  padding: 9px;
-  font-size: 15px;
-  border-radius: 5px;
+  padding: 12px 15px; /* Increased from 9px */
+  font-size: 16px; /* Increased from 15px */
+  border-radius: 6px; /* Slightly increased */
   border: 1px solid #bfc9d1;
   background: #fafdff;
-  margin-bottom: 4px;
+  margin-bottom: 6px; /* Increased from 4px */
   transition: border 0.2s;
   width: 100%;
   box-sizing: border-box;
+  min-height: 44px; /* Added minimum height for better touch targets */
 }
 
 .input:focus, .input-table:focus, select.input-table:focus {
@@ -214,13 +215,13 @@ h2 {
 }
 
 .form-section {
-  margin-bottom: 30px;
+  margin-bottom: 35px; /* Increased from 30px */
 }
 
 .row {
   display: flex;
-  gap: 20px;
-  margin-bottom: 10px;
+  gap: 25px; /* Increased from 20px */
+  margin-bottom: 15px; /* Increased from 10px */
 }
 
 .col {
@@ -244,21 +245,23 @@ h2 {
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 800px;
-  margin-bottom: 10px;
+  min-width: 900px; /* Increased from 800px */
+  margin-bottom: 15px; /* Increased from 10px */
   background: #fafdff;
 }
 
 th, td {
   border: 1px solid #bbb;
-  padding: 7px 5px;
+  padding: 12px 8px; /* Increased from 7px 5px */
   text-align: left;
+  min-width: 120px; /* Added minimum width for columns */
 }
 
 th {
   background: #f0f6fa;
   font-weight: bold;
-  font-size: 15px;
+  font-size: 16px; /* Increased from 15px */
+  padding: 15px 8px; /* Extra padding for headers */
 }
 
 tr:nth-child(even) {
@@ -279,9 +282,9 @@ ul {
 
 li {
   background: #ecf0f1;
-  margin-bottom: 12px;
-  border-radius: 7px;
-  padding: 14px 14px 10px 14px;
+  margin-bottom: 18px; /* Increased from 12px */
+  border-radius: 8px; /* Slightly increased */
+  padding: 20px 20px 15px 20px; /* Increased from 14px 14px 10px 14px */
   position: relative;
   box-shadow: 0 2px 8px 0 rgba(44, 62, 80, 0.07);
   color: inherit;
@@ -303,16 +306,17 @@ li small {
 }
 
 .btn-primary {
-  padding: 10px 18px;
+  padding: 12px 22px; /* Increased from 10px 18px */
   background: linear-gradient(90deg, #3498db 60%, #217dbb 100%);
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px; /* Slightly increased */
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px; /* Increased from 15px */
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 8px 0 rgba(44, 62, 80, 0.07);
+  min-height: 44px; /* Added for better touch targets */
 }
 
 .btn-primary:hover {
@@ -322,14 +326,15 @@ li small {
 .btn-danger {
   background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%);
   color: #fff;
-  padding: 8px 18px;
+  padding: 10px 22px; /* Increased width padding */
   border: none;
-  border-radius: 5px;
+  border-radius: 6px; /* Slightly increased */
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px; /* Increased from 15px */
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 8px 0 rgba(44, 62, 80, 0.07);
+  min-height: 44px; /* Added for consistency */
 }
 
 .btn-danger:hover {
@@ -339,16 +344,17 @@ li small {
 .btn-success {
   background: linear-gradient(90deg, #2ecc71 60%, #27ae60 100%);
   color: #fff;
-  padding: 14px;
+  padding: 16px; /* Increased from 14px */
   width: 100%;
-  margin-top: 20px;
+  margin-top: 25px; /* Increased from 20px */
   border: none;
-  border-radius: 5px;
+  border-radius: 6px; /* Slightly increased */
   font-weight: 700;
-  font-size: 17px;
+  font-size: 18px; /* Increased from 17px */
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 8px 0 rgba(44, 62, 80, 0.07);
+  min-height: 50px; /* Added for prominence */
 }
 
 .btn-success:hover {
@@ -433,10 +439,10 @@ li small {
 .register-box {
   background: #fafdff;
   border: 1.5px solid #bfc9d1;
-  border-radius: 10px;
-  padding: 18px 18px 8px 18px;
-  margin-bottom: 24px;
-  margin-top: 10px;
+  border-radius: 12px; /* Increased from 10px */
+  padding: 25px 25px 15px 25px; /* Increased from 18px 18px 8px 18px */
+  margin-bottom: 30px; /* Increased from 24px */
+  margin-top: 15px; /* Increased from 10px */
   box-shadow: 0 2px 8px 0 rgba(44, 62, 80, 0.07);
 }
 
@@ -449,17 +455,20 @@ li small {
 @media (max-width: 1100px) {
   .main-container {
     max-width: 98vw;
-    padding: 10px 2vw;
+    padding: 15px 3vw; /* Increased padding */
   }
   table, th, td {
-    font-size: 13px;
-    min-width: 600px;
+    font-size: 14px; /* Increased from 13px */
+    min-width: 700px; /* Increased from 600px */
+  }
+  th, td {
+    padding: 10px 6px; /* Increased padding */
   }
 }
 
 @media (max-width: 900px) {
   .main-container {
-    padding: 10px 1vw;
+    padding: 15px 2vw; /* Increased from 10px 1vw */
     max-width: 100vw;
   }
   .main-title {
@@ -472,14 +481,17 @@ li small {
   }
   .row {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px; /* Increased from 8px */
   }
   .col {
     width: 100%;
   }
   table, th, td {
-    font-size: 12px;
-    min-width: 500px;
+    font-size: 13px; /* Increased from 12px */
+    min-width: 550px; /* Increased from 500px */
+  }
+  th, td {
+    padding: 8px 5px; /* Maintained reasonable padding */
   }
 }
 

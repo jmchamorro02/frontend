@@ -18,8 +18,21 @@ const initialTeamRow = {
   horaFin: ''
 };
 
-// Cambiar initialActivityRow para solo tener descripción
-const initialActivityRow = {
+// Cambiar initialActivityRow para solo tener descripción - ahora será para avances
+const initialAdvanceRow = {
+  descripcion: ''
+};
+
+// Nuevas estructuras para las secciones adicionales
+const initialInterferenceRow = {
+  descripcion: ''
+};
+
+const initialStoppageRow = {
+  descripcion: ''
+};
+
+const initialCommentRow = {
   descripcion: ''
 };
 
@@ -30,8 +43,17 @@ const App = () => {
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
   const [reports, setReports] = useState([]);
-  const [activitiesTable, setActivitiesTable] = useState([
-    { ...initialActivityRow }
+  const [advancesTable, setAdvancesTable] = useState([
+    { ...initialAdvanceRow }
+  ]);
+  const [interferencesTable, setInterferencesTable] = useState([
+    { ...initialInterferenceRow }
+  ]);
+  const [stoppagesTable, setStoppagesTable] = useState([
+    { ...initialStoppageRow }
+  ]);
+  const [commentsTable, setCommentsTable] = useState([
+    { ...initialCommentRow }
   ]);
   const [loading, setLoading] = useState(false);
   const [networkError, setNetworkError] = useState('');
@@ -63,15 +85,17 @@ const App = () => {
   }, [catalogWorkers]);
 
   const tipoAsistenciaOptions = [
-    'Presencial',
-    'Teletrabajo',
-    'Licencia médica',
-    'Vacaciones',
-    'Permiso',
-    'Inasistencia',
-    'Turno',
-    'Reposo',
-    'Otro'
+    { value: 'EO', label: 'EO - En obra' },
+    { value: 'D', label: 'D - Descanso' },
+    { value: 'A', label: 'A - Ausente' },
+    { value: 'P', label: 'P - Permiso' },
+    { value: 'PP', label: 'PP - Permiso Pagado' },
+    { value: 'E', label: 'E - Enfermo' },
+    { value: 'LM', label: 'LM - Licencia' },
+    { value: 'C', label: 'C - Curso' },
+    { value: 'F', label: 'F - Finiquitado' },
+    { value: 'R', label: 'R - Rechazado' },
+    { value: 'T', label: 'T - Traspaso' }
   ];
 
   useEffect(() => {
@@ -185,13 +209,18 @@ const App = () => {
     }
     // Filtrar filas vacías
     const filteredTeam = team.filter(row => Object.values(row).some(val => val));
-    // Generar actividades a partir de los datos de la tabla de equipo si no hay activitiesTable
-    let filteredActivities = [];
-    if (Array.isArray(activitiesTable) && activitiesTable.length > 0 && activitiesTable.some(row => row.descripcion)) {
-      filteredActivities = activitiesTable.filter(row => row.descripcion);
+    // Generar avances a partir de los datos de la tabla de equipo si no hay advancesTable
+    let filteredAdvances = [];
+    if (Array.isArray(advancesTable) && advancesTable.length > 0 && advancesTable.some(row => row.descripcion)) {
+      filteredAdvances = advancesTable.filter(row => row.descripcion);
     } else {
-      filteredActivities = [];
+      filteredAdvances = [];
     }
+
+    // Filtrar interferencias, detenciones y comentarios
+    const filteredInterferences = interferencesTable.filter(row => row.descripcion);
+    const filteredStoppages = stoppagesTable.filter(row => row.descripcion);
+    const filteredComments = commentsTable.filter(row => row.descripcion);
     setLoading(true);
     setNetworkError('');
     try {
@@ -200,7 +229,10 @@ const App = () => {
         jornada,
         supervisor,
         team: filteredTeam,
-        actividades: filteredActivities
+        avances: filteredAdvances,
+        interferencias: filteredInterferences,
+        detenciones: filteredStoppages,
+        comentarios: filteredComments
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -208,7 +240,10 @@ const App = () => {
       setJornada('');
       setSupervisor('');
       setTeam([{ ...initialTeamRow }]);
-      setActivitiesTable([{ ...initialActivityRow }]);
+      setAdvancesTable([{ ...initialAdvanceRow }]);
+      setInterferencesTable([{ ...initialInterferenceRow }]);
+      setStoppagesTable([{ ...initialStoppageRow }]);
+      setCommentsTable([{ ...initialCommentRow }]);
       if (role === 'admin') {
         fetchAllReports(token);
       } else {
@@ -465,7 +500,7 @@ const App = () => {
                     onSubmit={e => { e.preventDefault(); handleReportSubmit(); }}
                     className="form-section"
                   >
-                    <h2>Equipo y Actividades</h2>
+                    <h2>Equipo y Avances</h2>
                     <div className="row">
                       <div className="col">
                         <input type="text" className="input" placeholder="Área" value={area} onChange={e => setArea(e.target.value)} />
@@ -569,7 +604,7 @@ const App = () => {
                                   <select value={row.tipoAsist || ''} onChange={e => handleTeamChange(idx, 'tipoAsist', e.target.value)} className="input-table">
                                     <option value="">Selecciona</option>
                                     {tipoAsistenciaOptions.map(opt => (
-                                      <option key={opt} value={opt}>{opt}</option>
+                                      <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                   </select>
                                 </td>
@@ -585,8 +620,21 @@ const App = () => {
                         <button type="button" onClick={handleAddTeamRow} className="btn-primary">Agregar Fila</button>
                       </div>
                     </div>
+                    
+                    {/* Glosario de tipos de asistencia */}
+                    <div className="form-section">
+                      <h3>Glosario de Tipos de Asistencia</h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '8px', fontSize: '14px', padding: '10px', background: theme === 'dark' ? '#273043' : '#f8f9fa', borderRadius: '5px' }}>
+                        {tipoAsistenciaOptions.map(opt => (
+                          <div key={opt.value} style={{ padding: '4px' }}>
+                            <strong>{opt.value}:</strong> {opt.label.split(' - ')[1]}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="table-responsive">
-                      <h3>Actividades</h3>
+                      <h3>Avances</h3>
                       <table>
                         <thead>
                           <tr>
@@ -594,13 +642,13 @@ const App = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {activitiesTable.map((row, idx) => (
+                          {advancesTable.map((row, idx) => (
                             <tr key={idx}>
                               <td>
                                 <input type="text" value={row.descripcion || ''} onChange={e => {
-                                  const updated = [...activitiesTable];
+                                  const updated = [...advancesTable];
                                   updated[idx].descripcion = e.target.value;
-                                  setActivitiesTable(updated);
+                                  setAdvancesTable(updated);
                                 }} className="input-table" />
                               </td>
                             </tr>
@@ -608,7 +656,88 @@ const App = () => {
                         </tbody>
                       </table>
                       <div className="table-btn-row">
-                        <button type="button" onClick={() => setActivitiesTable(prev => [...prev, { descripcion: '' }])} className="btn-primary">Agregar Actividad</button>
+                        <button type="button" onClick={() => setAdvancesTable(prev => [...prev, { descripcion: '' }])} className="btn-primary">Agregar Avance</button>
+                      </div>
+                    </div>
+
+                    <div className="table-responsive">
+                      <h3>Interferencias Responsabilidad Acción</h3>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Descripción</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {interferencesTable.map((row, idx) => (
+                            <tr key={idx}>
+                              <td>
+                                <input type="text" value={row.descripcion || ''} onChange={e => {
+                                  const updated = [...interferencesTable];
+                                  updated[idx].descripcion = e.target.value;
+                                  setInterferencesTable(updated);
+                                }} className="input-table" />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="table-btn-row">
+                        <button type="button" onClick={() => setInterferencesTable(prev => [...prev, { descripcion: '' }])} className="btn-primary">Agregar Interferencia</button>
+                      </div>
+                    </div>
+
+                    <div className="table-responsive">
+                      <h3>Detenciones por Responsabilidad Subcontrato</h3>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Descripción</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {stoppagesTable.map((row, idx) => (
+                            <tr key={idx}>
+                              <td>
+                                <input type="text" value={row.descripcion || ''} onChange={e => {
+                                  const updated = [...stoppagesTable];
+                                  updated[idx].descripcion = e.target.value;
+                                  setStoppagesTable(updated);
+                                }} className="input-table" />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="table-btn-row">
+                        <button type="button" onClick={() => setStoppagesTable(prev => [...prev, { descripcion: '' }])} className="btn-primary">Agregar Detención</button>
+                      </div>
+                    </div>
+
+                    <div className="table-responsive">
+                      <h3>Comentarios</h3>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Descripción</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {commentsTable.map((row, idx) => (
+                            <tr key={idx}>
+                              <td>
+                                <input type="text" value={row.descripcion || ''} onChange={e => {
+                                  const updated = [...commentsTable];
+                                  updated[idx].descripcion = e.target.value;
+                                  setCommentsTable(updated);
+                                }} className="input-table" />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <div className="table-btn-row">
+                        <button type="button" onClick={() => setCommentsTable(prev => [...prev, { descripcion: '' }])} className="btn-primary">Agregar Comentario</button>
                       </div>
                     </div>
                     <button type="submit" className="btn-success">Enviar Informe</button>
@@ -655,7 +784,7 @@ const App = () => {
                               </table>
                             </div>
                             <div>
-                              <strong>Actividades Realizadas:</strong>
+                              <strong>Avances Realizados:</strong>
                               <table>
                                 <thead>
                                   <tr>
@@ -663,7 +792,7 @@ const App = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {(report.actividades || []).map((row, idx) => (
+                                  {(report.avances || []).map((row, idx) => (
                                     <tr key={idx}>
                                       <td>{row.descripcion}</td>
                                     </tr>
@@ -671,6 +800,63 @@ const App = () => {
                                 </tbody>
                               </table>
                             </div>
+                            {report.interferencias && report.interferencias.length > 0 && (
+                              <div>
+                                <strong>Interferencias Responsabilidad Acción:</strong>
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>Descripción</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {report.interferencias.map((row, idx) => (
+                                      <tr key={idx}>
+                                        <td>{row.descripcion}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                            {report.detenciones && report.detenciones.length > 0 && (
+                              <div>
+                                <strong>Detenciones por Responsabilidad Subcontrato:</strong>
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>Descripción</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {report.detenciones.map((row, idx) => (
+                                      <tr key={idx}>
+                                        <td>{row.descripcion}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                            {report.comentarios && report.comentarios.length > 0 && (
+                              <div>
+                                <strong>Comentarios:</strong>
+                                <table>
+                                  <thead>
+                                    <tr>
+                                      <th>Descripción</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {report.comentarios.map((row, idx) => (
+                                      <tr key={idx}>
+                                        <td>{row.descripcion}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
                           </div>
                           <small style={{ color: '#7f8c8d' }}>Enviado el: {new Date(report.dateSubmitted).toLocaleString()}</small>
                           <button
