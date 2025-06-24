@@ -82,14 +82,16 @@ body.dark-theme {
 .main-container.dark input,
 .main-container.dark select,
 .main-container.dark .input,
-.main-container.dark .input-table {
+.main-container.dark .input-table,
+.main-container.dark textarea.input {
   background: #232a36;
   color: #e0e6ef;
   border: 1px solid #3d4b5c;
 }
 
 .main-container.dark input:focus,
-.main-container.dark select:focus {
+.main-container.dark select:focus,
+.main-container.dark textarea.input:focus {
   border: 1.5px solid #7ed6df;
 }
 
@@ -196,7 +198,7 @@ h2 {
   margin: 0 auto;
 }
 
-.input, .input-table, select.input-table {
+.input, .input-table, select.input-table, textarea.input {
   padding: 12px 15px; /* Increased from 9px */
   font-size: 16px; /* Increased from 15px */
   border-radius: 6px; /* Slightly increased */
@@ -207,9 +209,10 @@ h2 {
   width: 100%;
   box-sizing: border-box;
   min-height: 44px; /* Added minimum height for better touch targets */
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-.input:focus, .input-table:focus, select.input-table:focus {
+.input:focus, .input-table:focus, select.input-table:focus, textarea.input:focus {
   border: 1.5px solid #3498db;
   outline: none;
 }
@@ -450,6 +453,32 @@ li small {
   background: #232a36;
   border: 1.5px solid #3d4b5c;
   color: #e0e6ef;
+}
+
+.btn-remove-row {
+  background: linear-gradient(90deg, #e74c3c 60%, #c0392b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px 0 rgba(44, 62, 80, 0.07);
+}
+
+.btn-remove-row:hover {
+  background: linear-gradient(90deg, #c0392b 60%, #e74c3c 100%);
+  box-shadow: 0 2px 6px 0 rgba(44, 62, 80, 0.15);
+}
+
+.main-container.dark .btn-remove-row {
+  background: linear-gradient(90deg, #d63031 60%, #636e72 100%);
+}
+
+.main-container.dark .btn-remove-row:hover {
+  background: linear-gradient(90deg, #636e72 60%, #d63031 100%);
 }
 
 @media (max-width: 1100px) {
